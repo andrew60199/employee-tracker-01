@@ -35,25 +35,8 @@ const departmentQuery = () => {
     })
 }
 
-// This function isn't waiting for the query to be finished before resolving! - Need to fix
-const employeeAndRoleQuery = () => {
+const roleQuery = () => {
     return new Promise((resolve) => {
-
-        db.query(
-            'SELECT first_name , last_name FROM employee',
-            function(err, results) {
-                results.forEach(item => {
-
-                    const fullNames = `${item.first_name} ${item.last_name}`
-                    employeeArray.push(fullNames)
-                    managerArray.push(fullNames)
-
-                })
-                // Return two arrays through an object
-                return {employeeArray, managerArray}
-
-            }
-        )
 
         db.query(
             'SELECT title FROM role',
@@ -68,6 +51,15 @@ const employeeAndRoleQuery = () => {
 
         resolve()
     })
+}
+
+// This function was a pain! We got there in the end. Not the best but it works
+const employeeAndRoleQuery = () => {
+
+    return db.promise().query(
+
+        'SELECT first_name , last_name FROM employee'
+    )
 }
 
 // Questions for the user
@@ -173,18 +165,47 @@ const addRoleFunction = () => {
         })
 }
 
+// Not the best since there is a bit of repeating myself in the next two functions. But it works which is the main thing
+// I can always work with someone to look over it and come up with a better approach
 const addEmployeeFunction = () => {
     employeeAndRoleQuery()
-        .then(() => {
+        .then((results) => {
+
+            const [ possibleManagers ] = results
+
+            // Push to array here
+            possibleManagers.forEach(item => {
+            
+                managerArray.push(`${item.first_name} ${item.last_name}`)            
+            })
+                
+            console.log(managerArray)
+
+            roleQuery()
+
             inquirer.prompt(addEmployeeQuestion)
         })
 }
 
 const updateEmployeeFunction = () => {
     employeeAndRoleQuery()
-        .then(() => {
-            console.log('during')
+        .then((results) => {
+
+            const [ employeesFullNames ] = results
+
+            employeesFullNames.forEach(item => {
+            
+                employeeArray.push(`${item.first_name} ${item.last_name}`)           
+            })
+
+            console.log(employeeArray)
+
+            roleQuery()
+
             inquirer.prompt(updateEmployee)
+                .then(data => {
+                    console.log(data)
+                })
         })
 }
 

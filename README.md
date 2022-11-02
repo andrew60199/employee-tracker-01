@@ -29,6 +29,8 @@
 
 ...
 
+Massive thank you to Neil from askBCS who spent over an hour working through a challenge I encountered.
+
 ## Tests
 
 N/A
