@@ -1,26 +1,45 @@
-const mysql = require('mysql2');
-var inquirer = require('inquirer');
+const mysql = require('mysql2')
+const inquirer = require('inquirer')
+const {  openingQuestions, addDepartmentFunction, addRoleFunction, addEmployeeFunction, updateEmployeeFunction } = require('./src/questions.js')
 
-// create the connection to database
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const init = () => {
 
+    inquirer.prompt(openingQuestions)
+        .then((answers) => {
+            console.log(answers)
 
-inquirer
-  .prompt([
-    /* Pass your questions in here */
-  ])
-  .then((answers) => {
-    // Use user feedback for... whatever!!
-  })
-  .catch((error) => {
-    if (error.isTtyError) {
-      // Prompt couldn't be rendered in the current environment
-    } else {
-      // Something else went wrong
-    }
-  });
+            if (answers.query === 'View all departments') {
+                
+
+            } else if (answers.query === 'View all roles') {
+                
+
+            } else if (answers.query === 'View all employees') {
+                
+
+            } else if (answers.query === 'Add a department') {
+                addDepartmentFunction()
+
+            } else if (answers.query === 'Add a role') {
+                addRoleFunction()
+
+            } else if (answers.query === 'Add an employee') {
+                addEmployeeFunction()
+
+            } else if (answers.query === 'Update an employee') {
+                console.log('before')
+                updateEmployeeFunction()
+                console.log('after')
+
+            } else {
+                return
+            }
+
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+
+}
+
+init()
