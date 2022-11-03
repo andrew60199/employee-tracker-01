@@ -1,15 +1,6 @@
 // So that we can use environment variables 
-require('dotenv').config()
-const mysql = require('mysql2')
+const db = require('../config/connection.js')
 const inquirer = require('inquirer')
-
-// create the connection to database
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-})
 
 // Start arrays
 const departmentArray = []
@@ -57,7 +48,6 @@ const roleQuery = () => {
 const employeeAndRoleQuery = () => {
 
     return db.promise().query(
-
         'SELECT first_name , last_name FROM employee'
     )
 }
@@ -152,7 +142,8 @@ const updateEmployee = [
 
 // Functions that await for the queries to be complete before continuing
 const addDepartmentFunction = () => {
-    inquirer.prompt(addDepartmentQuestion)
+    inquirer
+        .prompt(addDepartmentQuestion)
         .then(data => {
             console.log(`The department ${data.departmentName} has been added to the database!`)
         })
@@ -161,7 +152,8 @@ const addDepartmentFunction = () => {
 const addRoleFunction = () => {
     departmentQuery()
         .then(() => {
-            inquirer.prompt(addRoleQuestions)
+            inquirer
+                .prompt(addRoleQuestions)
         })
 }
 
@@ -175,15 +167,13 @@ const addEmployeeFunction = () => {
 
             // Push to array here
             possibleManagers.forEach(item => {
-            
                 managerArray.push(`${item.first_name} ${item.last_name}`)            
             })
-                
-            console.log(managerArray)
 
             roleQuery()
 
-            inquirer.prompt(addEmployeeQuestion)
+            inquirer
+                .prompt(addEmployeeQuestion)
         })
 }
 
@@ -194,15 +184,13 @@ const updateEmployeeFunction = () => {
             const [ employeesFullNames ] = results
 
             employeesFullNames.forEach(item => {
-            
                 employeeArray.push(`${item.first_name} ${item.last_name}`)           
             })
 
-            console.log(employeeArray)
-
             roleQuery()
 
-            inquirer.prompt(updateEmployee)
+            inquirer
+                .prompt(updateEmployee)
                 .then(data => {
                     console.log(data)
                 })
