@@ -2,54 +2,64 @@
 const db = require('../config/connection.js')
 const inquirer = require('inquirer')
 
-// Start arrays
+// Starting arrays
 const departmentArray = []
 const roleArray = []
 const employeeArray = []
 const managerArray = ['None']
 
 // Promises to dynamically populate the arrays above 
-const departmentQuery = () => {
-    return new Promise((resolve) => {
-
-        db.query(
-            'SELECT name FROM department',
-            function(err, results) {
-                results.forEach(item => {
-                    departmentArray.push(item.name)
-                })
-                return departmentArray
-            }
-        )
-
-        resolve()
-    })
-}
-
-const roleQuery = () => {
-    return new Promise((resolve) => {
-
-        db.query(
-            'SELECT title FROM role',
-            function(err, results) {
-                results.forEach(item => {
-                    roleArray.push(item.title)
-        
-                })
-                return roleArray
-            }
-        )
-
-        resolve()
-    })
-}
-
-// This function was a pain! We got there in the end. Not the best but it works
-const employeeAndRoleQuery = () => {
-
-    return db.promise().query(
-        'SELECT first_name , last_name FROM employee'
+// Initially I had it in the wrong order trying to nest items together. Needed to separate them and make sure to return!!
+const departmentQuery = async () => {
+    const [departments] = await db.promise().query(
+        'SELECT name FROM department'
     )
+
+    departments.forEach(department => {
+        return departmentArray.push(department.name)
+    })
+    
+    return departmentArray
+}
+
+const roleQuery = async () => {
+    const [roles] = await db.promise().query(
+        'SELECT title FROM role'
+    )
+    
+    roles.forEach(role => {
+        return roleArray.push(role.title)
+    })
+    
+    return roleArray
+}
+
+const employeeQuery = async () => {
+    const [employees] = await db.promise().query(
+        'SELECT first_name , last_name FROM employee'
+        // 'SELECT CONCAT(first_name , \' \', last_name) FROM employee'
+    )
+    return employees
+}
+
+const employeeArrayBuilder = async () => {
+    const employees = await employeeQuery()
+
+    employees.forEach(employee => {
+        return employeeArray.push(`${employee.first_name} ${employee.last_name}`)
+    })
+
+    return employeeArray
+}
+
+const managerArrayBuilder = async () => {
+    const employees = await employeeQuery()
+
+    employees.forEach(employee => {
+        return managerArray.push(`${employee.first_name} ${employee.last_name}`)
+    })
+
+    return managerArray
 }
 
 // Questions for the user
@@ -141,60 +151,51 @@ const updateEmployee = [
 ]
 
 // Functions that await for the queries to be complete before continuing
-const addDepartmentFunction = () => {
-    inquirer
-        .prompt(addDepartmentQuestion)
-        .then(data => {
-            console.log(`The department ${data.departmentName} has been added to the database!`)
-        })
+const addDepartmentFunction = async () => {
+    const { departmentName } = await inquirer.prompt(addDepartmentQuestion)
+
+    // Add to database
+
+    console.log('\n-------------\n')
+    console.log(`The department '${departmentName}' has been added to the database!`)
+    console.log('\n-------------\n')
+    return 
 }
 
-const addRoleFunction = () => {
-    departmentQuery()
-        .then(() => {
-            inquirer
-                .prompt(addRoleQuestions)
-        })
+const addRoleFunction = async () => {
+    await departmentQuery()
+    const { roleName, roleSalary, roleDepartment } = await inquirer.prompt(addRoleQuestions)
+
+    // Add to database
+
+    console.log('\n-------------\n')
+    console.log(`${roleName} has been added to the database!`)
+    console.log('\n-------------\n')
+    return
 }
 
-// Not the best since there is a bit of repeating myself in the next two functions. But it works which is the main thing
-// I can always work with someone to look over it and come up with a better approach
-const addEmployeeFunction = () => {
-    employeeAndRoleQuery()
-        .then((results) => {
+// Struggled here so this is the best I can do
+const addEmployeeFunction = async () => {
+    await managerArrayBuilder()
+    await roleQuery()
+    const { employeeFirstName, employeeLastName, employeeRole, employeeManager } = await inquirer.prompt(addEmployeeQuestion)
 
-            const [ possibleManagers ] = results
+    // Add to database
 
-            // Push to array here
-            possibleManagers.forEach(item => {
-                managerArray.push(`${item.first_name} ${item.last_name}`)            
-            })
-
-            roleQuery()
-
-            inquirer
-                .prompt(addEmployeeQuestion)
-        })
+    console.log('\n-------------\n')
+    console.log(`${employeeFirstName} ${employeeLastName} has been added to the database!`)
+    console.log('\n-------------\n')
+    return
 }
 
-const updateEmployeeFunction = () => {
-    employeeAndRoleQuery()
-        .then((results) => {
+const updateEmployeeFunction = async () => {
+    await employeeArrayBuilder()
+    await roleQuery()
+    const { whichEmployee, newRole } = await inquirer.prompt(updateEmployee)
 
-            const [ employeesFullNames ] = results
-
-            employeesFullNames.forEach(item => {
-                employeeArray.push(`${item.first_name} ${item.last_name}`)           
-            })
-
-            roleQuery()
-
-            inquirer
-                .prompt(updateEmployee)
-                .then(data => {
-                    console.log(data)
-                })
-        })
+    console.log(whichEmployee)
+    console.log(newRole)
+    return 
 }
 
 module.exports = { openingQuestions, addDepartmentFunction, addRoleFunction, addEmployeeFunction, updateEmployeeFunction }
