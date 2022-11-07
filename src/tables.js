@@ -19,18 +19,19 @@ const showEmployees = async () => {
     // https://www.youtube.com/watch?v=TGt2xa7EzvI 
     // https://stackoverflow.com/questions/8084571/not-unique-table-alias
     // https://www.folkstalk.com/2022/09/join-first-name-and-last-name-sql-with-code-examples.html 
+    // https://dba.stackexchange.com/questions/151201/how-to-join-with-null-value 
 
     const employees = await db.promise().query(
         `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, rr.salary, CONCAT(ee.first_name, ' ', ee.last_name) AS manager
         FROM employee e
-        INNER JOIN role r
+        LEFT OUTER JOIN role r
         ON e.role_id = r.id
-        INNER JOIN department d
+        LEFT OUTER JOIN department d
         ON r.department_id = d.id
-        INNER JOIN role rr
+        LEFT OUTER JOIN role rr
         ON e.role_id = rr.id
-        INNER JOIN employee ee 
-        ON ee.id = e.id;`
+        LEFT OUTER JOIN employee ee 
+        ON ee.id = e.manager_id;`
     )
     return employees[0]
 }
