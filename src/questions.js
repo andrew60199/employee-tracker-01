@@ -1,6 +1,7 @@
 // So that we can use environment variables 
 const db = require('../config/connection.js')
 const inquirer = require('inquirer')
+const { insertDepartment, insertRole, insertEmployee } = require('./insert.js')
 
 // Starting arrays
 const departmentArray = []
@@ -155,6 +156,7 @@ const addDepartmentFunction = async () => {
     const { departmentName } = await inquirer.prompt(addDepartmentQuestion)
 
     // Add to database
+    insertDepartment(departmentName)
 
     console.log('\n-------------\n')
     console.log(`The department '${departmentName}' has been added to the database!`)
@@ -167,7 +169,8 @@ const addRoleFunction = async () => {
     const { roleName, roleSalary, roleDepartment } = await inquirer.prompt(addRoleQuestions)
 
     // Add to database
-
+    insertRole(departmentArray, roleName, roleSalary, roleDepartment)
+    
     console.log('\n-------------\n')
     console.log(`${roleName} has been added to the database!`)
     console.log('\n-------------\n')
@@ -181,6 +184,7 @@ const addEmployeeFunction = async () => {
     const { employeeFirstName, employeeLastName, employeeRole, employeeManager } = await inquirer.prompt(addEmployeeQuestion)
 
     // Add to database
+    insertEmployee(roleArray, managerArray, employeeFirstName, employeeLastName, employeeRole, employeeManager)
 
     console.log('\n-------------\n')
     console.log(`${employeeFirstName} ${employeeLastName} has been added to the database!`)
@@ -192,6 +196,8 @@ const updateEmployeeFunction = async () => {
     await employeeArrayBuilder()
     await roleQuery()
     const { whichEmployee, newRole } = await inquirer.prompt(updateEmployee)
+
+    // Add to database
 
     console.log(whichEmployee)
     console.log(newRole)
