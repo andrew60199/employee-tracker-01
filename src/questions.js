@@ -1,7 +1,7 @@
 // So that we can use environment variables 
 const db = require('../config/connection.js')
 const inquirer = require('inquirer')
-const { insertDepartment, insertRole, insertEmployee } = require('./insert.js')
+const { insertDepartment, insertRole, insertEmployee, alterEmployee } = require('./insert.js')
 
 // Starting arrays
 const departmentArray = []
@@ -198,9 +198,11 @@ const updateEmployeeFunction = async () => {
     const { whichEmployee, newRole } = await inquirer.prompt(updateEmployee)
 
     // Add to database
+    alterEmployee(employeeArray, roleArray, whichEmployee, newRole)
 
-    console.log(whichEmployee)
-    console.log(newRole)
+    console.log('\n-------------\n')
+    console.log(`${whichEmployee} has been updated!`)
+    console.log('\n-------------\n')
     return 
 }
 
